@@ -3,17 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package my.project.rest;
-
-import java.util.List;
-import my.project.entities.Carsonparkings;
+package my.project.utils;
 
 /**
  *
  * @author www
  */
-public interface ICarsOnParkingService extends IService<Carsonparkings>{
-
- 
+public class MediaTypeCustom {
+    public static final String APPLICATION_JSON ="application/json; charset=UTF-8";
     
 }

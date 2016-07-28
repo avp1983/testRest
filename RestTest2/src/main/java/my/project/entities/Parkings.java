@@ -38,23 +38,22 @@ public class Parkings implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue
-    @Basic(optional = false)
+    @GeneratedValue  
     @Column(name = "Id")
     private Integer id;
-   
+
     // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
     @Basic(optional = false)
     @Column(name = "Tariff")
     private BigDecimal tariff;
-    
-    
-    private BigDecimal revenue;
-    
+
+    @Column(name = "Name")
+    private String name;
+
     @Basic(optional = false)
     @Column(name = "Cars_limit")
     private int carslimit;
-    
+
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "parkingid")
     private Set<Carsonparkings> carsonparkingsSet;
 
@@ -95,6 +94,17 @@ public class Parkings implements Serializable {
         this.carslimit = carslimit;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+    
+    
+    
+
     @XmlTransient
     public Set<Carsonparkings> getCarsonparkingsSet() {
         return carsonparkingsSet;
@@ -103,16 +113,6 @@ public class Parkings implements Serializable {
     public void setCarsonparkingsSet(Set<Carsonparkings> carsonparkingsSet) {
         this.carsonparkingsSet = carsonparkingsSet;
     }
-
-    public BigDecimal getRevenue() {
-        return revenue;
-    }
-
-    public void setRevenue(BigDecimal revenue) {
-        this.revenue = revenue;
-    }
-    
-    
 
     @Override
     public int hashCode() {
@@ -138,5 +138,5 @@ public class Parkings implements Serializable {
     public String toString() {
         return "ent.Parkings[ id=" + id + " ]";
     }
-    
+
 }
