@@ -16,3 +16,11 @@
 > - Взаимодействие с клиентом через **REST**
 > - Использование **EJB**
 > - Среда исполнения - **Wildfly**
+
+
+###Схема БД
+help\sheme.png 
+
+###Запуск
+ cd RestTest2
+ mvn package wildfly:deploy

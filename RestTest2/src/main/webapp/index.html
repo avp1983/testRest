@@ -1,1 +1,260 @@
-HELLO
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Тестовое задание</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <!-- Disable phone number detection on iOS.  -->
+        <meta name="format-detection" content="telephone=no" />   
+        <link rel="stylesheet" href="css/jquery.mobile-1.4.2.css"/>
+        <link rel="stylesheet" href="css/datatables.css"/> 
+        <link rel="stylesheet" href="css/screen.css"/>   
+        
+        <!-- Set viewport scaling and zoom features -->
+        <meta name="viewport" content="width=device-width, initial-scale=1">   
+        <script type="text/javascript" src="js/libs/jquery-2.0.3.js"></script>   
+        <script type="text/javascript" src="js/libs/jquery.mobile-1.4.2.js"></script>    
+        <script type="text/javascript" src="js/libs/lodash-2.4.1.js"></script>
+        <script type="text/javascript" src="js/libs/datatables.js"></script>    
+        <script type="text/javascript" src="js/app.js"></script>
+
+
+        <script type="text/javascript">
+            function timeConverter(UNIX_timestamp) {
+                var a = new Date(UNIX_timestamp);
+                var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                var year = a.getFullYear();
+                var month = months[a.getMonth()];
+                var date = a.getDate();
+                var hour = a.getHours();
+                var min = a.getMinutes();
+                var sec = a.getSeconds();
+                var time = date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec;
+                return time;
+            }
+            $(document).ready(function () {
+                 table = $("#carsOnParkingDataTable").DataTable({
+                    "bServerSide": true,
+                    "sAjaxSource": "/restTest/rest/carsonparkings",
+                    "bProcessing": true,
+                    "sPaginationType": "full_numbers",
+                    "bFilter": true,
+                    "language": {
+                        "lengthMenu": "Показывать _MENU_ записей",
+                        "info": "Показано c _START_ по _END_. Всего  _TOTAL_.",
+                    }
+
+                });
+                table.on('xhr.dt', function (e, settings, json) {
+                    for (var i = 0, ien = json.aaData.length; i < ien; i++) {
+                        var d = json.aaData[i];
+                        json.aaData[i] = [d.carid.number, d.carid.model, timeConverter(d.begtime)];
+                    }
+                    // Note no return - manipulate the data directly in the JSON object.
+                });
+                /*table.on('search.dt', function () {
+                 
+                 //alert(this.search());
+                 });
+                 ;*/
+
+
+
+                $('#searchNumber').on('keyup change', function () {
+                    if (table.search() !== this.value) { //&&this.value.length > 1
+                        table.search(this.value).draw();
+                    }
+                });
+
+
+                //setup the app after all scripts have loaded
+
+                $(function () {
+                    // Enhance the footer since it is present outside the page definition and hence not enhanced automatically.
+                    $("[data-role='footer']").toolbar();
+                    $("[data-role='navbar']").navbar();
+                });
+                // Update the contents of the toolbars
+                $(document).on("pageshow", "[data-role='page']", function () {
+                    var current = $(this).jqmData("title");
+                    // Remove active class from nav buttons
+                    $("[data-role='navbar'] a.ui-btn-active").removeClass("ui-btn-active");
+                    // Add active class to current nav button
+                    $("[data-role='navbar'] a").each(function () {
+                        if ($(this).text() === current) {
+                            $(this).addClass("ui-btn-active");
+                        }
+                    });
+                });
+                // On browsing to the Members jQuery Mobile page, update it to show all members
+                $("#member-art").on("pagebeforeshow", function () {
+                    // Fetches the initial member data and populates the table using lodash templates
+                   // updateMemberTable();
+                    table.ajax.reload();
+                });
+                //Register an event listener on the submit action
+                $('#reg').submit(function (event) {
+                    event.preventDefault();
+                    var memberData = $(this).serializeObject();
+                    registerMember(memberData);
+                });
+                //Register the cancel listener
+                $('#cancel').click(function (event) {
+                    //clear input fields
+                    $('#reg')[0].reset();
+                    //clear existing msgs
+                    $('span.invalid').remove();
+                    $('span.success').remove();
+                });
+                $("#refreshButton").click(function (event) {
+                    updateMemberTable();
+                });
+                //Clear member registration and error messages on page change
+                $("#register-car").on("pagebeforeshow", function (event) {
+                    $("#formMsgs").empty();
+                    $('span.invalid').remove();
+                });
+            });
+            $.fn.serializeObject = function () {
+                var o = {};
+                var a = this.serializeArray();
+                $.each(a, function () {
+                    if (o[this.name]) {
+                        if (!o[this.name].push) {
+                            o[this.name] = [o[this.name]];
+                        }
+                        o[this.name].push(this.value || '');
+                    } else {
+                        o[this.name] = this.value || '';
+                    }
+                });
+                return o;
+            };
+        </script>
+    </head>
+    <body>
+        <div id="container">
+            <section>
+                <!-- New HTML5 article tag -->
+                <article id="member-art" data-role="page" data-title="List Members">
+                    <!-- Header -->
+                    <div data-role="header" class="header" data-position="fixed">
+                        <h3>Машины на парковке</h3>
+
+                    </div>
+                    <!-- /Header -->
+
+                    <div class="ui-content" role="main">
+                        <a style="  margin-left: 48px;" href="#register-car" class="ui-btn">Принять машину</a>
+                        <div class="wrap">
+                            <!--<button id="refreshButton" data-role="button" data-inline="true" data-icon="refresh">Обновить</button>-->
+
+                            <input  name="searchNumber" id="searchNumber" placeholder="Поиск по номеру" />
+                            <table  data-role="table" class="ui-responsive"  id="carsOnParkingDataTable" >
+                                <thead>
+                                    <tr>
+                                        <th>Номер машины</th>
+                                        <th>Модель</th>
+                                        <th>Время заезда</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+
+                            <div class="member-foot">
+
+                            </div>
+                        </div>
+                    </div>
+                </article>
+                <article id="intro-art" data-role="page" data-title="Home">
+                    <!-- Header -->
+                    <div data-role="header" class="header">
+                        <h3>Управление автопраковкой</h3>                    
+                    </div>
+                    <!-- /Header -->
+
+                    <div class="ui-content" role="main">
+                        <div class="wrap">
+
+                            Возможности:
+
+                            <ul id="features">
+                                <li class="feature"><a href="#register-car" >Принять машину</a></li>
+                                <li class="feature">Отпустить машину</li>
+                                <li class="feature">Посмотреть количество свободных мест</li>
+                                <li class="feature">Посмотреть наличие  машины на стоянке</li>
+                                <li class="feature"><a href="#member-art" >Посмотреть список машин на стоянке в данный момент</a></li>
+                                <li class="feature">Посчитать выручку за день</li>
+                                <li class="feature">Изменить тариф (руб/час)</li>                           
+                            </ul>
+                        </div>
+                    </div>
+
+
+                </article>
+
+                <!-- New HTML5 article tag -->
+                <article id="register-car" data-role="page" data-title="Add a Member">
+                    <!-- Header -->
+                    <div data-role="header" class="header">
+                        <h3>Принять машину</h3>
+                    </div>
+                    <!-- /Header -->
+
+                    <div class="ui-content" role="main">
+                        <div class="wrap">
+                            <!-- For now mapping bean validation constraints from server side model is a manual task -->
+                            <form name="reg" id="reg" data-ajax="false">
+                                <fieldset>
+
+                                    <div class="ui-field-contain">
+                                        <label for="number">Номер:</label>
+                                        <input type="text" name="number" id="number" placeholder="Номер" required autofocus/>
+                                    </div>
+                                    <div class="ui-field-contain">
+                                        <label for="model">Модель:</label>
+                                        <input type="text" name="model" id="model" placeholder="Модель" required/>
+                                    </div>                                
+                                    <div id="formMsgs"></div>
+                                    <div class="ui-grid-a app-responsive">
+                                        <div class="ui-block-a"><input type="submit" id="register" value="Принять" data-theme="b"/></div>
+                                        <div class="ui-block-b"><input type="button" name="cancel" id="cancel" value="Отмена"/></div>
+                                        <div class="ui-block-b">
+                                            <a  href="#member-art" class="ui-btn">Вернуться</a>
+                                        </div>
+                                    </div>
+                                </fieldset>
+                            </form>
+                        </div>
+                    </div>
+                </article>
+
+
+
+                <!-- Footer -->
+                <div data-role="footer" data-tap-toggle="false" data-position="fixed" data-theme="a">
+                    <div data-role="navbar">
+                        <ul>
+                            <li><a href="#intro-art" data-icon="home" class="ui-btn-active">На главную</a></li>
+                            <!--<li><a href="#register-art" data-icon="plus">Add a Member</a></li>
+                            <li><a href="#member-art" data-icon="grid">List Members</a></li>-->
+                        </ul>
+                    </div>
+                </div>
+                <!-- /Footer -->
+            </section>
+        </div>
+        <script type="text/template" id="member-tmpl">
+            <% _.each(members, function(member) { %>
+            <tr>
+            <th><%=member.id%></td>
+            <td><%=member.name%></td>
+            <td><a href="mailto:<%=member.email%>" class="ui-link"><%=member.email%></a></td>
+            <td><a href="tel:<%=member.phoneNumber%>" class="ui-link">Call</a> or <a href="sms:<%=member.phoneNumber%>" class="ui-link">SMS</a> <%=member.phoneNumber%></td>
+            <td><a href="rest/members/<%=member.id%>" rel="external" target="_blank" class="resturl ui-link">JSON</a></td>
+            </tr>
+            <% }); %>
+        </script>
+    </body>
+</html>
