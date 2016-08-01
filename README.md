@@ -19,7 +19,8 @@
 
 
 ###Схема БД
-help\sheme.png 
+[help\sheme.png](https://github.com/avp1983/testRest/blob/master/help/sheme.png)
+ 
 
 ###Запуск
  cd RestTest2
