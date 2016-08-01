@@ -7,6 +7,7 @@ package my.project.entities;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.Objects;
 import java.util.Set;
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
@@ -116,23 +117,48 @@ public class Parkings implements Serializable {
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (id != null ? id.hashCode() : 0);
+        int hash = 7;
+        hash = 79 * hash + Objects.hashCode(this.id);
+        hash = 79 * hash + Objects.hashCode(this.tariff);
+        hash = 79 * hash + Objects.hashCode(this.name);
+        hash = 79 * hash + this.carslimit;
+        hash = 79 * hash + Objects.hashCode(this.carsonparkingsSet);
         return hash;
     }
 
     @Override
-    public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Parkings)) {
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
             return false;
         }
-        Parkings other = (Parkings) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Parkings other = (Parkings) obj;
+        if (this.carslimit != other.carslimit) {
+            return false;
+        }
+        if (!Objects.equals(this.name, other.name)) {
+            return false;
+        }
+        if (!Objects.equals(this.id, other.id)) {
+            return false;
+        }
+        if (!Objects.equals(this.tariff, other.tariff)) {
+            return false;
+        }
+        if (!Objects.equals(this.carsonparkingsSet, other.carsonparkingsSet)) {
             return false;
         }
         return true;
     }
+
+ 
+
+   
 
     @Override
     public String toString() {
