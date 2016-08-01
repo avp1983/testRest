@@ -7,8 +7,8 @@ package my.project.ejb.service;
 
 import java.util.List;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -29,7 +29,7 @@ import my.project.utils.MediaTypeCustom;
 @Path("cars")
 public class CarsFacadeREST extends AbstractFacade<Cars> {
 
-    @PersistenceContext(unitName = "primary")
+    @Inject
     private EntityManager em;
 
     public CarsFacadeREST() {

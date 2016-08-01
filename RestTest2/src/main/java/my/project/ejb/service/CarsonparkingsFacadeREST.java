@@ -54,7 +54,7 @@ public class CarsonparkingsFacadeREST extends AbstractFacade<Carsonparkings> {
     private Logger log;
     @Inject
     private Validator validator;
-    @PersistenceContext(unitName = "primary")
+    @Inject
     private EntityManager em;
     
     @Inject ParkingsFacadeREST parkings;

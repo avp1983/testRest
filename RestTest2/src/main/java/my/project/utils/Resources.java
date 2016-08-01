@@ -17,6 +17,7 @@
 package my.project.utils;
 
 import java.util.logging.Logger;
+import javax.ejb.Singleton;
 
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.InjectionPoint;
@@ -35,11 +36,12 @@ import javax.persistence.PersistenceContext;
  * private EntityManager em;
  * </pre>
  */
+@Singleton
 public class Resources {
 
     @Produces
     @PersistenceContext(unitName = "primary")
-    private EntityManager em;
+    private static EntityManager em;
 
     @Produces
     public Logger produceLog(InjectionPoint injectionPoint) {
