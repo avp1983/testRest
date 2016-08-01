@@ -8,7 +8,7 @@
         <link rel="stylesheet" href="css/jquery.mobile-1.4.2.css"/>
         <link rel="stylesheet" href="css/datatables.css"/> 
         <link rel="stylesheet" href="css/screen.css"/>   
-        
+
         <!-- Set viewport scaling and zoom features -->
         <meta name="viewport" content="width=device-width, initial-scale=1">   
         <script type="text/javascript" src="js/libs/jquery-2.0.3.js"></script>   
@@ -32,7 +32,7 @@
                 return time;
             }
             $(document).ready(function () {
-                 table = $("#carsOnParkingDataTable").DataTable({
+                table = $("#carsOnParkingDataTable").DataTable({
                     "bServerSide": true,
                     "sAjaxSource": "/restTest/rest/carsonparkings",
                     "bProcessing": true,
@@ -47,7 +47,12 @@
                 table.on('xhr.dt', function (e, settings, json) {
                     for (var i = 0, ien = json.aaData.length; i < ien; i++) {
                         var d = json.aaData[i];
-                        json.aaData[i] = [d.carid.number, d.carid.model, timeConverter(d.begtime)];
+                        json.aaData[i] = [
+                            d.carid.number,
+                            d.carid.model,
+                            timeConverter(d.begtime),
+                            addLink('releaseCar', '/restTest/rest/carsonparkings/' + d.id, 'Отпустить машину')
+                        ];
                     }
                     // Note no return - manipulate the data directly in the JSON object.
                 });
@@ -56,6 +61,15 @@
                  //alert(this.search());
                  });
                  ;*/
+
+                $('#carsOnParkingDataTable').delegate("a.releaseCar", "click", function () {
+                    event.preventDefault();
+                    releaseCar(this);
+                });
+
+
+
+
 
 
 
@@ -88,7 +102,7 @@
                 // On browsing to the Members jQuery Mobile page, update it to show all members
                 $("#member-art").on("pagebeforeshow", function () {
                     // Fetches the initial member data and populates the table using lodash templates
-                   // updateMemberTable();
+                    // updateMemberTable();
                     table.ajax.reload();
                 });
                 //Register an event listener on the submit action
@@ -155,6 +169,7 @@
                                         <th>Номер машины</th>
                                         <th>Модель</th>
                                         <th>Время заезда</th>
+                                        <th>Действия</th>
                                     </tr>
                                 </thead>
                                 <tbody>

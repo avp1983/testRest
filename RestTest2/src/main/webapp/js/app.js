@@ -79,3 +79,20 @@ function registerMember(memberData) {
         }
     });
 }
+
+/**
+ * Ссылка на действие
+ * @returns html a
+ */
+function addLink(cls,  href, text) {
+    return '<a class="'+cls+'" href="'+href+'">'+text+'</a>';
+}
+/**
+ * Отпустить машину со стоянки
+ * @param {type} obj
+ * @returns {undefined}
+ */
+function releaseCar(obj){
+    alert(obj.id);
+    
+}
