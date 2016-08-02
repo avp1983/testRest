@@ -101,11 +101,10 @@ public class Cars implements Serializable {
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 67 * hash + Objects.hashCode(this.id);
-        hash = 67 * hash + Objects.hashCode(this.number);
-        hash = 67 * hash + Objects.hashCode(this.model);
-        hash = 67 * hash + Objects.hashCode(this.carsonparkingsSet);
+        int hash = 3;
+        hash = 17 * hash + Objects.hashCode(this.id);
+        hash = 17 * hash + Objects.hashCode(this.number);
+        hash = 17 * hash + Objects.hashCode(this.model);
         return hash;
     }
 
@@ -124,17 +123,13 @@ public class Cars implements Serializable {
         if (!Objects.equals(this.number, other.number)) {
             return false;
         }
-        if (!Objects.equals(this.model, other.model)) {
-            return false;
-        }
         if (!Objects.equals(this.id, other.id)) {
-            return false;
-        }
-        if (!Objects.equals(this.carsonparkingsSet, other.carsonparkingsSet)) {
             return false;
         }
         return true;
     }
+
+
 
    
     

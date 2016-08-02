@@ -9,6 +9,7 @@ import java.util.List;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -36,6 +37,8 @@ public class CarsFacadeREST extends AbstractFacade<Cars> {
         super(Cars.class);
     }
 
+
+
     @POST
     @Override
     @Consumes(MediaTypeCustom.APPLICATION_JSON)
@@ -45,7 +48,7 @@ public class CarsFacadeREST extends AbstractFacade<Cars> {
 
     @PUT
     @Path("{id}")
-    @Consumes( MediaTypeCustom.APPLICATION_JSON)
+    @Consumes(MediaTypeCustom.APPLICATION_JSON)
     public void edit(@PathParam("id") Integer id, Cars entity) {
         super.edit(entity);
     }
@@ -72,7 +75,7 @@ public class CarsFacadeREST extends AbstractFacade<Cars> {
 
     @GET
     @Path("{from}/{to}")
-    @Produces( MediaTypeCustom.APPLICATION_JSON)
+    @Produces(MediaTypeCustom.APPLICATION_JSON)
     public List<Cars> findRange(@PathParam("from") Integer from, @PathParam("to") Integer to) {
         return super.findRange(new int[]{from, to});
     }

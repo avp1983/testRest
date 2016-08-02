@@ -116,11 +116,9 @@ public class Carsonparkings implements Serializable {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 13 * hash + Objects.hashCode(this.id);
-        hash = 13 * hash + Objects.hashCode(this.begtime);
-        hash = 13 * hash + Objects.hashCode(this.endtime);
-        hash = 13 * hash + Objects.hashCode(this.carid);
-        hash = 13 * hash + Objects.hashCode(this.parkingid);
+        hash = 97 * hash + Objects.hashCode(this.id);
+        hash = 97 * hash + Objects.hashCode(this.begtime);
+        hash = 97 * hash + Objects.hashCode(this.endtime);
         return hash;
     }
 
@@ -145,14 +143,9 @@ public class Carsonparkings implements Serializable {
         if (!Objects.equals(this.endtime, other.endtime)) {
             return false;
         }
-        if (!Objects.equals(this.carid, other.carid)) {
-            return false;
-        }
-        if (!Objects.equals(this.parkingid, other.parkingid)) {
-            return false;
-        }
         return true;
     }
+
 
   
 

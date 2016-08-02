@@ -117,12 +117,11 @@ public class Parkings implements Serializable {
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 79 * hash + Objects.hashCode(this.id);
-        hash = 79 * hash + Objects.hashCode(this.tariff);
-        hash = 79 * hash + Objects.hashCode(this.name);
-        hash = 79 * hash + this.carslimit;
-        hash = 79 * hash + Objects.hashCode(this.carsonparkingsSet);
+        int hash = 3;
+        hash = 53 * hash + Objects.hashCode(this.id);
+        hash = 53 * hash + Objects.hashCode(this.tariff);
+        hash = 53 * hash + Objects.hashCode(this.name);
+        hash = 53 * hash + this.carslimit;
         return hash;
     }
 
@@ -150,11 +149,10 @@ public class Parkings implements Serializable {
         if (!Objects.equals(this.tariff, other.tariff)) {
             return false;
         }
-        if (!Objects.equals(this.carsonparkingsSet, other.carsonparkingsSet)) {
-            return false;
-        }
         return true;
     }
+
+
 
  
 

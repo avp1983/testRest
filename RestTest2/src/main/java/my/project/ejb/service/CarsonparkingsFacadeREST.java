@@ -16,10 +16,11 @@ import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.validation.ConstraintViolation;
@@ -34,7 +35,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
 import my.project.entities.Cars;
 
 import my.project.entities.Carsonparkings;
@@ -56,14 +56,30 @@ public class CarsonparkingsFacadeREST extends AbstractFacade<Carsonparkings> {
     private Validator validator;
     @Inject
     private EntityManager em;
-    
-    @Inject ParkingsFacadeREST parkings;
+
+    @Inject
+    private CarsFacadeREST cars;
+
+    @Inject
+    private Event<ICarsOnParkingChangeEvent> itemNotifier;
+
+    @Inject
+    ParkingsFacadeREST parkings;
 
     @Resource
     private SessionContext context;
 
     public CarsonparkingsFacadeREST() {
         super(Carsonparkings.class);
+    }
+
+    public int countCarsOnParcking(String sSearch) {
+        String sqlSearch = (sSearch != null && !sSearch.isEmpty() && sSearch.matches("^[a-zA-Z0-9]+$")) ? " AND upper(c.carid.number) LIKE :number" : "";
+        Query query1 = em.createQuery("SELECT  count(c) FROM Carsonparkings c  JOIN  c.carid  JOIN  c.parkingid WHERE c.endtime is NULL" + sqlSearch);
+        if (!sqlSearch.isEmpty()) {
+            query1.setParameter("number", '%' + sSearch.toUpperCase() + '%');
+        }
+        return ((Long) query1.getSingleResult()).intValue();
     }
 
     /**
@@ -91,24 +107,12 @@ public class CarsonparkingsFacadeREST extends AbstractFacade<Carsonparkings> {
         responseObj.put(name, msg);
         return Response.status(status).entity(responseObj).build();
     }
-    
-    public int countCarsOnParcking(String sSearch){ 
-        String sqlSearch = (sSearch != null && !sSearch.isEmpty() && sSearch.matches("^[a-zA-Z0-9]+$")) ? " AND upper(c.carid.number) LIKE :number" : "";
-        Query query1 = em.createQuery("SELECT  count(c) FROM Carsonparkings c  JOIN  c.carid  JOIN  c.parkingid WHERE c.endtime is NULL" + sqlSearch);
-        if (!sqlSearch.isEmpty()) {
-            query1.setParameter("number", '%' + sSearch.toUpperCase() + '%');
-        }
-        return ((Long) query1.getSingleResult()).intValue();
-    }
-    
-    
-    public int leftSeats(){
+
+    public int getFreeSeats() {
         int countNow = countCarsOnParcking(null);
-        Parkings p = parkings.find(1);
+        Parkings p = em.find(Parkings.class, 1);
         return p.getCarslimit()-countNow;
     }
-    
-    
 
     @POST
     @Consumes(MediaTypeCustom.APPLICATION_JSON)
@@ -124,12 +128,12 @@ public class CarsonparkingsFacadeREST extends AbstractFacade<Carsonparkings> {
         try {
             Cars car = null;
             List<Carsonparkings> carsonparkings = findByNumber(entity.getNumber()); //TODO: Заменить like на =
-            if (carsonparkings != null && !carsonparkings.isEmpty()) { 
+            if (carsonparkings != null && !carsonparkings.isEmpty()) {
                 return buildMsg(Response.Status.CONFLICT, "number", "Машина с таким номером уже на стоянке");
 
             }
-            
-            if  (leftSeats()<=0){
+
+            if (getFreeSeats() <= 0) {
                 return buildMsg(Response.Status.CONFLICT, "number", "Не осталось мест");
             }
 
@@ -145,6 +149,13 @@ public class CarsonparkingsFacadeREST extends AbstractFacade<Carsonparkings> {
             park.setCarid(car);
             park.setParkingid(parking);
             em.persist(park);
+            itemNotifier.fire(new ICarsOnParkingChangeEvent() {
+                @Override
+                public int getDelta() {
+                    return -1;
+                }
+                
+            });
             return Response.ok().entity(entity).build();
 
         } catch (Exception e) {
@@ -153,15 +164,39 @@ public class CarsonparkingsFacadeREST extends AbstractFacade<Carsonparkings> {
 
         }
 
-        
-
         //super.create(entity);
     }
 
-    @PUT
-    @Path("{id}")
+    @POST
+    @Path("release")
     @Consumes(MediaTypeCustom.APPLICATION_JSON)
-    public void edit(@PathParam("id") Integer id, Carsonparkings entity) {
+    @Produces(MediaTypeCustom.APPLICATION_JSON)
+    public Response releaseCar(Carsonparkings entity) {
+        entity.setEndtime(new Date());
+        Set<ConstraintViolation<Carsonparkings>> violations = validator.validate(entity);
+        if (!violations.isEmpty()) {
+            return createViolationResponse(violations).build();
+        }
+
+        try {
+            em.merge(entity);
+        } catch (PersistenceException e) {
+            return buildMsg(Response.Status.BAD_REQUEST, "error", e.getMessage());
+        }
+        itemNotifier.fire(new ICarsOnParkingChangeEvent() {
+            @Override
+            public int getDelta() {
+                return 1;
+            }
+            
+        });
+        return Response.ok().entity(entity).build();
+    }
+
+    @PUT
+    @Consumes(MediaTypeCustom.APPLICATION_JSON)
+    @Override
+    public void edit(Carsonparkings entity) {
         super.edit(entity);
     }
 
@@ -207,7 +242,7 @@ public class CarsonparkingsFacadeREST extends AbstractFacade<Carsonparkings> {
     ) {
         //TODO:validation
         List<Carsonparkings> carsonparkings = findByNumber(sSearch, iDisplayStart, iDisplayLength);
-       
+
         int count = countCarsOnParcking(sSearch);
 
         return new JQueryDataTable<Carsonparkings>(sEcho, count, count, carsonparkings);

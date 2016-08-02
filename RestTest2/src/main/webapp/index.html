@@ -32,6 +32,8 @@
                 return time;
             }
             $(document).ready(function () {
+                
+
                 table = $("#carsOnParkingDataTable").DataTable({
                     "bServerSide": true,
                     "sAjaxSource": "/restTest/rest/carsonparkings",
@@ -45,14 +47,17 @@
 
                 });
                 table.on('xhr.dt', function (e, settings, json) {
+                    tableData={}; 
                     for (var i = 0, ien = json.aaData.length; i < ien; i++) {
                         var d = json.aaData[i];
                         json.aaData[i] = [
                             d.carid.number,
                             d.carid.model,
                             timeConverter(d.begtime),
-                            addLink('releaseCar', '/restTest/rest/carsonparkings/' + d.id, 'Отпустить машину')
+                            addLink('releaseCar', d.id, 'Отпустить машину')
                         ];
+                        tableData[d.id] =d;
+                        
                     }
                     // Note no return - manipulate the data directly in the JSON object.
                 });
@@ -127,6 +132,10 @@
                     $("#formMsgs").empty();
                     $('span.invalid').remove();
                 });
+                var freeSeats = $('#freeSeats');
+                setInterval(function() {getFreeSeats(freeSeats); }, 1000);
+
+                
             });
             $.fn.serializeObject = function () {
                 var o = {};
@@ -163,6 +172,8 @@
                             <!--<button id="refreshButton" data-role="button" data-inline="true" data-icon="refresh">Обновить</button>-->
 
                             <input  name="searchNumber" id="searchNumber" placeholder="Поиск по номеру" />
+                             <div id="tableMsgs"></div>
+                             <div> Количество свободных мест: <span id="freeSeats"></span></div>
                             <table  data-role="table" class="ui-responsive"  id="carsOnParkingDataTable" >
                                 <thead>
                                     <tr>
