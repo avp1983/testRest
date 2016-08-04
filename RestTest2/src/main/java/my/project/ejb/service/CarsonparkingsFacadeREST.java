@@ -64,22 +64,16 @@ public class CarsonparkingsFacadeREST extends AbstractFacade<Carsonparkings> {
     private Event<ICarsOnParkingChangeEvent> itemNotifier;
 
     @Inject
-    ParkingsFacadeREST parkings;
+    private ParkingsFacadeREST parkings;
 
     @Resource
     private SessionContext context;
 
+    @Inject
+    private StatisticInfo statisticInfo;
+
     public CarsonparkingsFacadeREST() {
         super(Carsonparkings.class);
-    }
-
-    public int countCarsOnParcking(String sSearch) {
-        String sqlSearch = (sSearch != null && !sSearch.isEmpty() && sSearch.matches("^[a-zA-Z0-9]+$")) ? " AND upper(c.carid.number) LIKE :number" : "";
-        Query query1 = em.createQuery("SELECT  count(c) FROM Carsonparkings c  JOIN  c.carid  JOIN  c.parkingid WHERE c.endtime is NULL" + sqlSearch);
-        if (!sqlSearch.isEmpty()) {
-            query1.setParameter("number", '%' + sSearch.toUpperCase() + '%');
-        }
-        return ((Long) query1.getSingleResult()).intValue();
     }
 
     /**
@@ -108,12 +102,6 @@ public class CarsonparkingsFacadeREST extends AbstractFacade<Carsonparkings> {
         return Response.status(status).entity(responseObj).build();
     }
 
-    public int getFreeSeats() {
-        int countNow = countCarsOnParcking(null);
-        Parkings p = em.find(Parkings.class, 1);
-        return p.getCarslimit()-countNow;
-    }
-
     @POST
     @Consumes(MediaTypeCustom.APPLICATION_JSON)
     @Produces(MediaTypeCustom.APPLICATION_JSON)
@@ -133,7 +121,7 @@ public class CarsonparkingsFacadeREST extends AbstractFacade<Carsonparkings> {
 
             }
 
-            if (getFreeSeats() <= 0) {
+            if (statisticInfo.getFreeSeats() <= 0) {
                 return buildMsg(Response.Status.CONFLICT, "number", "Не осталось мест");
             }
 
@@ -154,7 +142,7 @@ public class CarsonparkingsFacadeREST extends AbstractFacade<Carsonparkings> {
                 public int getDelta() {
                     return -1;
                 }
-                
+
             });
             return Response.ok().entity(entity).build();
 
@@ -188,7 +176,7 @@ public class CarsonparkingsFacadeREST extends AbstractFacade<Carsonparkings> {
             public int getDelta() {
                 return 1;
             }
-            
+
         });
         return Response.ok().entity(entity).build();
     }
@@ -243,7 +231,7 @@ public class CarsonparkingsFacadeREST extends AbstractFacade<Carsonparkings> {
         //TODO:validation
         List<Carsonparkings> carsonparkings = findByNumber(sSearch, iDisplayStart, iDisplayLength);
 
-        int count = countCarsOnParcking(sSearch);
+        int count = statisticInfo.countCarsOnParcking(sSearch);
 
         return new JQueryDataTable<Carsonparkings>(sEcho, count, count, carsonparkings);
     }

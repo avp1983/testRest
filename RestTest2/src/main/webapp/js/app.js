@@ -146,3 +146,27 @@ function getFreeSeats(jQobj) {
         }
     });
 }
+
+
+function getDayRevenue(jQobj) {
+      $.ajax({
+        url: '/restTest/rest/statisticInfo/dayRevenue',
+        contentType: "application/json",
+        dataType: "json",
+        type: "GET",        
+        success: function (data) {
+
+            jQobj.text(data);
+        },
+        error: function (error) {
+
+            $('#tableMsgs').append($('<span class="invalid">' + error.responseText + '</span>'));
+
+        },
+        complete: function () {
+            
+        }
+    });
+    
+    
+}

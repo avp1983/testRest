@@ -135,7 +135,8 @@
                 var freeSeats = $('#freeSeats');
                 setInterval(function() {getFreeSeats(freeSeats); }, 1000);
 
-                
+                var dayRevenue = $('#dayRevenue');
+                setInterval(function() {getDayRevenue(dayRevenue); }, 1000);
             });
             $.fn.serializeObject = function () {
                 var o = {};
@@ -173,7 +174,9 @@
 
                             <input  name="searchNumber" id="searchNumber" placeholder="Поиск по номеру" />
                              <div id="tableMsgs"></div>
+                             
                              <div> Количество свободных мест: <span id="freeSeats"></span></div>
+                             <div> Выручка за сегодня: <span id="dayRevenue"></span></div>
                             <table  data-role="table" class="ui-responsive"  id="carsOnParkingDataTable" >
                                 <thead>
                                     <tr>
